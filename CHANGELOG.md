@@ -7,16 +7,22 @@ https://github.com/coleifer/peewee/releases
 
 ## master
 
+[View commits](https://github.com/coleifer/peewee/compare/4.0.1...master)
+
+## 4.0.1
+
 * Ensure `gr_context` is set on greenlet in `greenlet_spawn` so that
   contextvars will be operable in sync handlers.
 * Removed `SqliteExtDatabase` (it basically served no purpose in 4.0). Use
   `SqliteDatabase` instead.
 * Moved driver and extension-specific pooled implementations into the
   corresponding extension module rather than putting all into `playhouse.pool`.
+* Restore custom `dumps` option for postgres JSON fields.
+* Major docs rewrite / reorganization.
 
-[View commits](https://github.com/coleifer/peewee/compare/4.0.0...master)
+[View commits](https://github.com/coleifer/peewee/compare/4.0.0...4.0.1)
 
-## 4.0.0 (pending)
+## 4.0.0
 
 * Adds preliminary support for `asyncio` via a new playhouse extension. See
   [the documentation](http://docs.peewee-orm.com/en/latest/peewee/asyncio.html)
