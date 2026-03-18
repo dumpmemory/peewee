@@ -191,6 +191,17 @@ class TestModelSQL(ModelDatabaseTestCase):
         self.assertEqual(sql, expected[0])
         self.assertTrue(params in (['foo', 'bar'], ['bar', 'foo']))
 
+    def test_model_select_from(self):
+        inner = (User
+                 .select(User.id, User.username)
+                 .where(User.username == 'x'))
+        query = inner.select_from(inner.c.username)
+        self.assertSQL(query, (
+            'SELECT "t1"."username" FROM ('
+            'SELECT "t2"."id", "t2"."username" '
+            'FROM "users" AS "t2" '
+            'WHERE ("t2"."username" = ?)) AS "t1"'), ['x'])
+
     def test_join_ctx(self):
         query = Tweet.select(Tweet.id).join(Favorite).switch(Tweet).join(User)
         self.assertSQL(query, (
@@ -313,6 +324,19 @@ class TestModelSQL(ModelDatabaseTestCase):
             'SELECT "t1"."content" FROM "tweet" AS "t1" '
             'INNER JOIN "users" AS "ua" ON ("t1"."user_id" = "ua"."id") '
             'WHERE ("ua"."username" = ?)'), ['huey'])
+
+    def test_filter_with_or_across_joins(self):
+        query = (Tweet
+                 .select(Tweet.content)
+                 .filter(
+                     DQ(user__username='huey') |
+                     DQ(content__like='%hello%')))
+        self.assertSQL(query, (
+            'SELECT "t1"."content" FROM "tweet" AS "t1" '
+            'INNER JOIN "users" AS "t2" '
+            'ON ("t1"."user_id" = "t2"."id") '
+            'WHERE (("t2"."username" = ?) OR '
+            '("t1"."content" LIKE ?))'), ['huey', '%hello%'])
 
     def test_filter_join_combine_models(self):
         query = (Tweet
@@ -1013,6 +1037,7 @@ class TestOnConflictSQL(ModelDatabaseTestCase):
             'WHERE ("ukvp"."extra" < ?) '
             'RETURNING "ukvp"."id"'), ['k1', 1, 10, 100])
 
+    @skip_if(IS_CRDB, 'crdb lol')
     def test_on_conflict_named_constraint(self):
         query = (UKVP
                  .insert(key='k1', value=1)
