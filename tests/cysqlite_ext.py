@@ -6,11 +6,8 @@ import cysqlite
 from peewee import *
 from playhouse.cysqlite_ext import *
 
-from .base import BaseTestCase
 from .base import DatabaseTestCase
-from .base import TestModel
 from .base import db_loader
-from .base import skip_unless
 
 
 database = CySqliteDatabase('peewee_test.db', timeout=100)
